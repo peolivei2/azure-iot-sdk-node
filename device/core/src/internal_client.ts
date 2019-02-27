@@ -598,7 +598,7 @@ export interface DeviceTransport extends EventEmitter {
   sendOutputEventBatch(outputName: string, messages: Message[], done: (err?: Error, result?: results.MessageEnqueued) => void): void;
 
   // Streams
-  onStreamRequest(callback: StreamRequestCallback);
+  onStreamRequest(callback: StreamRequestCallback): void;
   sendStreamResponse(response: StreamResponse, callback: (err?: Error) => void): void;
   enableStreams(callback: (err?: Error) => void): void;
   disableStreams(callback: (err?: Error) => void): void;

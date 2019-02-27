@@ -114,5 +114,20 @@ function ModuleClientCtor(fakeTransport) {
       });
       client[testClient.onMethodFunc]('methodName', function () {});
     });
+
+    it('retries to enable streams', function (testCallback) {
+      var fakeTransport = new EventEmitter();
+      fakeTransport.onStreamRequest = sinon.stub();
+      fakeTransport.enableStreams = sinon.stub().callsArgWith(0, new errors.TimeoutError('failed'));
+
+      var client = testClient.ctor(fakeTransport);
+      client._maxOperationTimeout = 100;
+      client.on('error', (err) => {
+        assert(fakeTransport.onStreamRequest.calledOnce);
+        assert(fakeTransport.enableStreams.callCount >= 2);
+        testCallback();
+      });
+      client.onStreamRequest(function () {});
+    });
   });
 });

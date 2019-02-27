@@ -644,6 +644,38 @@ var ModuleClient = require('../lib/module_client').ModuleClient;
         });
       });
     });
+
+    describe('onStreamRequest', function () {
+      it('registers a callback with the streamRequest event on the transport', function (testCallback) {
+        var fakeTransport = new FakeTransport();
+        var client = new ClientCtor(fakeTransport);
+        client.open(function () {
+          client.onStreamRequest(function () { });
+          assert.isTrue(fakeTransport.onStreamRequest.calledOnce);
+          testCallback();
+        });
+      });
+
+      it('calls enableStreams on the transport', function () {
+
+      });
+
+      it('emits an error if the call to enableStreams fail', function () {
+
+      });
+
+      it('calls the onStreamRequest callback with a StreamRequest object when a stream request is received', function () {
+
+      });
+
+      it('calls SendStreamResponse on the transport when the stream request is accepted', function () {
+
+      });
+
+      it('calls sendStreamResponse on the transport when a stream request is rejected', function () {
+
+      });
+    });
   });
 });
 

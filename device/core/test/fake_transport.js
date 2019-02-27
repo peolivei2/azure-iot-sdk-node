@@ -6,6 +6,7 @@
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var results = require('azure-iot-common').results;
+var sinon = require('sinon');
 
 function FakeTransport() {
   EventEmitter.call(this);
@@ -77,8 +78,11 @@ function FakeTransport() {
     callback();
   };
 
-  this.onDeviceMethod = function(methodName, callback) {
-  }
+  this.onDeviceMethod = function() {};
+
+  this.onStreamRequest = sinon.stub();
+
+  this.enableStreams = sinon.stub().callsArg(0);
 }
 
 util.inherits(FakeTransport, EventEmitter);

@@ -1069,4 +1069,28 @@ describe('Mqtt', function () {
       transport._twinClient.emit('twinDesiredPropertiesUpdate', fakePatch);
     });
   });
+
+  describe('#enableStreams', function () {
+
+    it('calls connect on the transport if the transport is disconnected', function (testCallback) {
+      var transport = new Mqtt(fakeAuthenticationProvider, fakeMqttBase);
+      transport.enableStreams(function () {
+        assert.isTrue(fakeMqttBase.connect.calledOnce);
+        testCallback();
+      });
+    });
+
+    it('emits an error if it fails to connect the transport', function (testCallback) {
+      var transport = new Mqtt(fakeAuthenticationProvider, fakeMqttBase);
+      var fakeError = new Error('fake');
+      fakeMqttBase.connect = sinon.stub().callsArgWith(1, fakeError);
+      transport.enableStreams(function (err) {
+        assert.strictEqual(err, fakeError);
+        testCallback();
+      });
+    });
+
+    // test subscription
+    // test publish
+  });
 });
