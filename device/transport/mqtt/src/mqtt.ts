@@ -10,6 +10,7 @@ import { endpoint, results, errors, Message, AuthenticationProvider, Authenticat
 import { MethodMessage, DeviceMethodResponse, DeviceTransport, DeviceClientOptions, TwinProperties, SharedAccessKeyAuthenticationProvider } from 'azure-iot-device';
 import { X509AuthenticationProvider, SharedAccessSignatureAuthenticationProvider } from 'azure-iot-device';
 import { getUserAgentString } from 'azure-iot-device';
+import { StreamRequestCallback, StreamResponse } from 'azure-iot-device';
 import { EventEmitter } from 'events';
 import * as util from 'util';
 import * as dbg from 'debug';
@@ -133,6 +134,10 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
             /*Codes_SRS_NODE_DEVICE_MQTT_16_034: [The `sendMethodResponse` method shall fail with a `NotConnectedError` if the `MqttBase` object is not connected.]*/
             callback(new errors.NotConnectedError('device disconnected: the service already considers the method has failed'));
           },
+          sendStreamResponse: (response, callback) => {
+            debug('cannot send a stream response if the transport is disconnected');
+            callback(new errors.NotConnectedError('device disconnected: the service already considers the method has failed'));
+          },
           getTwin: (callback) => {
             /*Codes_SRS_NODE_DEVICE_MQTT_16_075: [`getTwin` shall establish the MQTT connection by calling `connect` on the `MqttBase` object if it is disconnected.]*/
             this._fsm.handle('connect', (err) => {
@@ -188,12 +193,24 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
               }
             });
           },
+          enableStreams: (callback) => {
+            this._fsm.handle('connect', (err) => {
+              if (err) {
+                callback(err);
+              } else {
+                this._fsm.handle('enableStreams', callback);
+              }
+            });
+          },
           disableC2D: (callback) => {
             /*Codes_SRS_NODE_DEVICE_MQTT_16_041: [`disableC2D` shall call its callback immediately if the MQTT connection is already disconnected.]*/
             callback();
           },
           disableMethods: (callback) => {
             /*Codes_SRS_NODE_DEVICE_MQTT_16_044: [`disableMethods` shall call its callback immediately if the MQTT connection is already disconnected.]*/
+            callback();
+          },
+          disableStreams: (callback) => {
             callback();
           },
           enableTwinDesiredPropertiesUpdates: (callback) => {
@@ -306,6 +323,21 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
               callback(!!err ? translateError(err) : null);
             });
           },
+          sendStreamResponse: (response, callback) => {
+            const status = response.isAccepted ? 200 : 400;
+            const topicName = util.format(
+              TOPIC_RESPONSE_PUBLISH_FORMAT,
+              'streams',
+              status,
+              response.requestId
+            );
+
+            debug('sending streams response using topic: ' + topicName);
+            debug(JSON.stringify(response.payload));
+            this._mqtt.publish(topicName, JSON.stringify(response.payload), { qos: 0, retain: false }, (err) => {
+              callback(!!err ? translateError(err) : null);
+            });
+          },
           enableC2D: (callback) => {
             this._setupSubscription(this._topics.message, 1, callback);
           },
@@ -315,11 +347,17 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
           enableInputMessages: (callback) => {
             this._setupSubscription(this._topics.inputMessage, 1, callback);
           },
+          enableStreams: (callback) => {
+            this._setupSubscription(this._topics.streams, 1, callback);
+          },
           disableC2D: (callback) => {
             this._removeSubscription(this._topics.message, callback);
           },
           disableMethods: (callback) => {
             this._removeSubscription(this._topics.method, callback);
+          },
+          disableStreams: (callback) => {
+            this._removeSubscription(this._topics.streams, callback);
           },
           /*Codes_SRS_NODE_DEVICE_MQTT_16_077: [`getTwin` shall call the `getTwin` method on the `MqttTwinClient` object and pass it its callback.]*/
           getTwin: (callback) => this._twinClient.getTwin(callback),
@@ -541,6 +579,14 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
     this._fsm.handle('sendMethodResponse', response, done);
   }
 
+  sendStreamResponse(response: StreamResponse, callback: (err?: Error) => void): void {
+    if (!response.requestId) {
+      throw new errors.ArgumentError('Stream response must have a requestId');
+    }
+
+    this._fsm.handle('sendStreamResponse', response, callback);
+  }
+
   /**
    * @private
    */
@@ -548,6 +594,18 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
     /*Codes_SRS_NODE_DEVICE_MQTT_16_066: [The `methodCallback` parameter shall be called whenever a `method_<methodName>` is emitted and device methods have been enabled.]*/
     this.on('method_' + methodName, callback);
   }
+
+  onStreamRequest(callback: StreamRequestCallback): void {
+    this.on('streamRequest', callback);
+  }
+
+  enableStreams(callback: (err?: Error) => void): void {
+    this._fsm.handle('enableStreams', callback);
+  }
+
+  disableStreams(callback: (err?: Error) => void): void {
+    this._fsm.handle('disableStreams', callback);
+    }
 
   /**
    * @private
@@ -690,6 +748,14 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
       subscribed: false,
       topicMatchRegex: /^\$iothub\/methods\/POST\/.*$/g,
       handler: this._onDeviceMethod.bind(this)
+    };
+
+    this._topics.streams = {
+      name: '$iothub/streams/POST/#',
+      subscribeInProgress: false,
+      subscribed: false,
+      topicMatchRegex: /^\$iothub\/streams\/POST\/.*$/g,
+      handler: this._onStreamRequest.bind(this)
     };
 
     if (credentials.moduleId) {
@@ -868,12 +934,17 @@ export class Mqtt extends EventEmitter implements DeviceTransport {
           verb: string;
       }
     ]*/
-    const methodMessage = _parseMessage(topic, payload);
+    const methodMessage = _parseMessage(topic, payload) as MethodMessage;
     if (!!methodMessage) {
       // Codes_SRS_NODE_DEVICE_MQTT_RECEIVER_13_003: [ If there is a listener for the method event, a method_<METHOD NAME> event shall be emitted for each message received. ]
       // we emit a message for the event 'method_{method name}'
       this.emit('method_' + methodMessage.methods.methodName, methodMessage);
     }
+  }
+
+  private _onStreamRequest(topic: string, payload: any): void {
+    const streamRequest = _parseMessage(topic, payload) as StreamRequestMessage;
+    this.emit('streamRequest', streamRequest);
   }
 
   private _getEventTopicFromMessage(message: Message, extraSystemProperties?: { [key: string]: string }): string {
@@ -968,7 +1039,17 @@ class MethodMessageImpl implements MethodMessage {
   body: Buffer;
 }
 
-function _parseMessage(topic: string, body: any): MethodMessage {
+/**
+ * @private
+ */
+class StreamRequestMessage {
+  requestId: string;
+  name: string;
+  url: string;
+  authorizationToken: string;
+}
+
+function _parseMessage(topic: string, body: any): MethodMessage | StreamRequestMessage {
   let url: URL.Url;
   let path: string[];
   let query: any;
@@ -991,44 +1072,64 @@ function _parseMessage(topic: string, body: any): MethodMessage {
   }
 
   if (path.length > 0 && path[0] === '$iothub') {
-    let message = new MethodMessageImpl();
-    if (path.length > 1 && path[1].length > 0) {
-      // create an object for the module; for example, $iothub/twin/...
-      // would result in there being a message.twin object
-      let mod = message[path[1]] = new MethodDescription();
-
-      // populates the request ID if there is one
-      if (!!(query.$rid)) {
-        message.requestId = query.$rid;
-      }
-
-      // parse the other properties properties (excluding $rid)
-      message.properties = query;
-      delete message.properties.$rid;
-
-      // save the body
-      message.body = body;
-
-      // parse the verb
-      if (path.length > 2 && path[2].length > 0) {
-        mod.verb = path[2];
-
-        // This is a topic that looks like this:
-        //  $iothub/methods/POST/{method name}?$rid={request id}&{serialized properties}
-        // We parse the method name out.
-        if (path.length > 3 && path[3].length > 0) {
-          mod.methodName = path[3];
-        } else {
-          // The service published a message on a strange topic name. This is
-          // probably a service bug. At any rate we don't know what to do with
-          // this strange topic so we throw.
-          throw new Error('Device method call\'s MQTT topic name does not include the method name.');
-        }
-      }
+    switch (path[1]) {
+      case 'methods':
+        return createMethodMessage(path, query, body);
+      case 'streams':
+        return createStreamsMessage(path, query, body);
     }
-
-    return message;
   }
 
   return undefined;
+}
+
+function createMethodMessage(path: string[], query: any, body: any): MethodMessageImpl {
+  let message = new MethodMessageImpl();
+  if (path.length > 1 && path[1].length > 0) {
+    // create an object for the module; for example, $iothub/twin/...
+    // would result in there being a message.twin object
+    let mod = message[path[1]] = new MethodDescription();
+
+    // populates the request ID if there is one
+    if (!!(query.$rid)) {
+      message.requestId = query.$rid;
+    }
+
+    // parse the other properties properties (excluding $rid)
+    message.properties = query;
+    delete message.properties.$rid;
+
+    // save the body
+    message.body = body;
+
+    // parse the verb
+    if (path.length > 2 && path[2].length > 0) {
+      mod.verb = path[2];
+
+      // This is a topic that looks like this:
+      //  $iothub/methods/POST/{method name}?$rid={request id}&{serialized properties}
+      // We parse the method name out.
+      if (path.length > 3 && path[3].length > 0) {
+        mod.methodName = path[3];
+      } else {
+        // The service published a message on a strange topic name. This is
+        // probably a service bug. At any rate we don't know what to do with
+        // this strange topic so we throw.
+        throw new Error('Device method call\'s MQTT topic name does not include the method name.');
+      }
+    }
+  }
+
+  return message;
+}
+
+function createStreamsMessage(path: string[], query: any, body: any): StreamRequestMessage {
+  let request: StreamRequestMessage = {
+    name: path[3],
+    requestId: query.$rid,
+    url: query.$url,
+    authorizationToken: query.$auth
+  };
+
+  return request;
 }

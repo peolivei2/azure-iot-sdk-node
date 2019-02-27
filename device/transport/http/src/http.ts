@@ -12,7 +12,7 @@ import { Http as Base } from 'azure-iot-http-base';
 import { endpoint, errors, results, Message, AuthenticationProvider, AuthenticationType, TransportConfig, encodeUriComponentStrict } from 'azure-iot-common';
 import { translateError } from './http_errors.js';
 import { IncomingMessage } from 'http';
-import { DeviceTransport, MethodMessage, DeviceMethodResponse, TwinProperties, SharedAccessKeyAuthenticationProvider } from 'azure-iot-device';
+import { DeviceTransport, MethodMessage, DeviceMethodResponse, TwinProperties, SharedAccessKeyAuthenticationProvider, StreamRequestCallback, StreamResponse } from 'azure-iot-device';
 import { X509AuthenticationProvider, SharedAccessSignatureAuthenticationProvider } from 'azure-iot-device';
 import { DeviceClientOptions, HttpReceiverOptions } from 'azure-iot-device';
 import { getUserAgentString } from 'azure-iot-device';
@@ -618,7 +618,31 @@ export class Http extends EventEmitter implements DeviceTransport {
     throw new errors.NotImplementedError('Output events are not implemented over HTTP.');
   }
 
-
+  // Streams
+  /**
+   * @private
+   */
+  onStreamRequest(callback: StreamRequestCallback): void {
+    throw new errors.NotImplementedError('Streams are not available over HTTP');
+  }
+  /**
+   * @private
+   */
+  enableStreams(callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over HTTP');
+  }
+  /**
+   * @private
+   */
+  disableStreams(callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over HTTP');
+  }
+  /**
+   * @private
+   */
+  sendStreamResponse(response: StreamResponse, callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over HTTP');
+  }
 
   private _insertAuthHeaderIfNecessary(headers: { [key: string]: string }, credentials: TransportConfig): void {
     if (this._authenticationProvider.type === AuthenticationType.Token) {

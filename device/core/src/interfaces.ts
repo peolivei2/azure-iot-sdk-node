@@ -128,3 +128,49 @@ export interface DeviceClientOptions extends X509 {
    */
   amqp?: AmqpTransportOptions;
 }
+
+/**
+ * Device stream request received from the service
+ */
+export interface StreamRequest {
+  /**
+   * Unique identifier for this specific request
+   */
+  requestId: string;
+
+  /**
+   * Name of the stream
+   */
+  name: string;
+
+  /**
+   * Websocket URL used to transport the stream
+   */
+  url: string;
+
+  /**
+   * Authorization token used to secure the websocket connection
+   */
+  authorizationToken: string;
+
+  /**
+   * Accepts the stream request
+   *
+   * @param callback function called when the request has been accepted successfully
+   */
+  accept: (callback?: (err?: Error) => void) => void | Promise<any>;
+
+  /**
+   * Accepts the stream request
+   *
+   * @param callback function called when the request has been rejected successfully
+   */
+  reject: (callback?: (err?: Error) => void) => void | Promise<any>;
+}
+
+export interface StreamResponse {
+  isAccepted: boolean;
+  requestId: string;
+}
+
+export type StreamRequestCallback = (request: StreamRequest) => void;

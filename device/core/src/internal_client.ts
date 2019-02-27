@@ -15,7 +15,7 @@ import { SharedAccessSignature as CommonSharedAccessSignature } from 'azure-iot-
 import { ExponentialBackOffWithJitter, RetryPolicy, RetryOperation } from 'azure-iot-common';
 import { DeviceMethodRequest, DeviceMethodResponse } from './device_method';
 import { Twin, TwinProperties } from './twin';
-import { DeviceClientOptions } from './interfaces';
+import { DeviceClientOptions, StreamRequestCallback, StreamResponse } from './interfaces';
 
 /**
  * @private
@@ -58,6 +58,7 @@ export abstract class InternalClient extends EventEmitter {
   private _methodCallbackMap: any;
   private _disconnectHandler: (err?: Error, result?: any) => void;
   private _methodsEnabled: boolean;
+  private _streamsEnabled: boolean;
 
   constructor(transport: DeviceTransport, connStr?: string) {
     /*Codes_SRS_NODE_INTERNAL_CLIENT_05_001: [The Client constructor shall throw ReferenceError if the transport argument is falsy.]*/
@@ -65,6 +66,7 @@ export abstract class InternalClient extends EventEmitter {
 
     super();
     this._methodsEnabled = false;
+    this._streamsEnabled = false;
 
     if (connStr) {
       throw new errors.InvalidOperationError('the connectionString parameter of the constructor is not used - users of the SDK should be using the `fromConnectionString` factory method.');
@@ -101,6 +103,16 @@ export abstract class InternalClient extends EventEmitter {
           this._twin.enableTwinDesiredPropertiesUpdates((err) => {
             if (err) {
               /*Codes_SRS_NODE_INTERNAL_CLIENT_16_101: [If the retry policy fails to reestablish the twin desired properties updates functionality a `disconnect` event shall be emitted with a `results.Disconnected` object.]*/
+              this.emit('disconnect', new results.Disconnected(err));
+            }
+          });
+        }
+
+        if (this._streamsEnabled) {
+          this._streamsEnabled = false;
+          debug('re-enabling streams links');
+          this._enableStreams((err) => {
+            if (err) {
               this.emit('disconnect', new results.Disconnected(err));
             }
           });
@@ -337,6 +349,45 @@ export abstract class InternalClient extends EventEmitter {
     }
   }
 
+  /**
+   * Registers a handler for stream requests
+   *
+   * @param callback Function called when a stream request is received
+   */
+  onStreamRequest(callback: StreamRequestCallback): void {
+    this._transport.onStreamRequest((request) => {
+      request.accept = (acceptCallback) => {
+        const response: StreamResponse = {
+          isAccepted: true,
+          requestId: request.requestId
+        };
+
+        return callbackToPromise((_callback) => {
+          this._transport.sendStreamResponse(response, _callback);
+        }, acceptCallback);
+      };
+
+      request.reject = (rejectCallback) => {
+        const response: StreamResponse = {
+          isAccepted: false,
+          requestId: request.requestId
+        };
+
+        return callbackToPromise((_callback) => {
+          this._transport.sendStreamResponse(response, _callback);
+        }, rejectCallback);
+      };
+
+      callback(request);
+    });
+
+    this._enableStreams((err) => {
+      if (err) {
+        this.emit('error', err);
+      }
+    });
+  }
+
   protected _onDeviceMethod(methodName: string, callback: (request: DeviceMethodRequest, response: DeviceMethodResponse) => void): void {
     // validate input args
     this._validateDeviceMethodInputs(methodName, callback);
@@ -423,6 +474,23 @@ export abstract class InternalClient extends EventEmitter {
       callback();
     }
   }
+
+  private _enableStreams(callback: (err?: Error) => void): void {
+    if (!this._streamsEnabled) {
+      const retryOp = new RetryOperation(this._retryPolicy, this._maxOperationTimeout);
+      retryOp.retry((opCallback) => {
+        this._transport.enableStreams(opCallback);
+      }, (err) => {
+        if (!err) {
+          this._streamsEnabled = true;
+        }
+        callback(err);
+      });
+    } else {
+      callback();
+    }
+  }
+
 
   // Currently there is no code making use of this function, because there is no "removeDeviceMethod" corresponding to "onDeviceMethod"
   // private _disableMethods(callback: (err?: Error) => void): void {
@@ -529,6 +597,11 @@ export interface DeviceTransport extends EventEmitter {
   sendOutputEvent(outputName: string, message: Message, done: (err?: Error, result?: results.MessageEnqueued) => void): void;
   sendOutputEventBatch(outputName: string, messages: Message[], done: (err?: Error, result?: results.MessageEnqueued) => void): void;
 
+  // Streams
+  onStreamRequest(callback: StreamRequestCallback);
+  sendStreamResponse(response: StreamResponse, callback: (err?: Error) => void): void;
+  enableStreams(callback: (err?: Error) => void): void;
+  disableStreams(callback: (err?: Error) => void): void;
 }
 
 export interface BlobUpload {

@@ -8,7 +8,7 @@ import * as dbg from 'debug';
 const debug = dbg('azure-iot-device-amqp:Amqp');
 import { EventEmitter } from 'events';
 
-import { DeviceTransport, MethodMessage, DeviceMethodResponse, TwinProperties, DeviceClientOptions, SharedAccessKeyAuthenticationProvider } from 'azure-iot-device';
+import { DeviceTransport, MethodMessage, DeviceMethodResponse, TwinProperties, DeviceClientOptions, SharedAccessKeyAuthenticationProvider, StreamRequestCallback, StreamResponse } from 'azure-iot-device';
 import { getUserAgentString } from 'azure-iot-device';
 import { Amqp as BaseAmqpClient, AmqpBaseTransportConfig, translateError, AmqpMessage, SenderLink, ReceiverLink } from 'azure-iot-amqp-base';
 import { endpoint, SharedAccessSignature, errors, results, Message, AuthenticationProvider, AuthenticationType, TransportConfig } from 'azure-iot-common';
@@ -824,6 +824,32 @@ export class Amqp extends EventEmitter implements DeviceTransport {
   sendOutputEventBatch(outputName: string, messages: Message[], done: (err?: Error, result?: results.MessageEnqueued) => void): void {
     /*Codes_SRS_NODE_DEVICE_AMQP_18_004: [`sendOutputEventBatch` shall throw a `NotImplementedError`.]*/
     throw new errors.NotImplementedError('Output events are not implemented over AMQP.');
+  }
+
+  // Streams
+  /**
+   * @private
+   */
+  onStreamRequest(callback: StreamRequestCallback): void {
+    throw new errors.NotImplementedError('Streams are not available over AMQP');
+  }
+  /**
+   * @private
+   */
+  enableStreams(callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over AMQP');
+  }
+  /**
+   * @private
+   */
+  disableStreams(callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over AMQP');
+  }
+  /**
+   * @private
+   */
+  sendStreamResponse(response: StreamResponse, callback: (err?: Error) => void): void {
+    throw new errors.NotImplementedError('Streams are not available over AMQP');
   }
 
   protected _getConnectionUri(credentials: TransportConfig): string {
