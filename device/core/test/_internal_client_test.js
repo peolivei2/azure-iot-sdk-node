@@ -656,12 +656,26 @@ var ModuleClient = require('../lib/module_client').ModuleClient;
         });
       });
 
-      it('calls enableStreams on the transport', function () {
-
+      it('calls enableStreams on the transport', function (testCallback) {
+        var fakeTransport = new FakeTransport();
+        var client = new ClientCtor(fakeTransport);
+        client.open(function () {
+          client.onStreamRequest(function () { });
+          assert.isTrue(fakeTransport.enableStreams.calledOnce);
+          testCallback();
+        });
       });
 
-      it('emits an error if the call to enableStreams fail', function () {
-
+      it('emits an error if the call to enableStreams fail', function (testCallback) {
+        var fakeTransport = new FakeTransport();
+        var fakeError = new Error('fake');
+        fakeTransport.enableStreams = sinon.stub().callsArgWith(0, fakeError);
+        var client = new ClientCtor(fakeTransport);
+        client.on('error', function (err) {
+          assert.strictEqual(err, fakeError);
+          testCallback();
+        });
+        client.onStreamRequest(function () { });
       });
 
       it('calls the onStreamRequest callback with a StreamRequest object when a stream request is received', function () {
