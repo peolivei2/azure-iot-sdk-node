@@ -1,15 +1,14 @@
 'use strict';
-/*jshint esversion: 6 */
 
 
 /**
  * Connect to registry
  * Connect to the Azure IoTHub registry.  More specifically, the SDK saves the connection string that is passed in for future use.
  *
- * connectionString String Service connection string
+ * connectionString String connection string
  * returns connectResponse
  **/
-exports.registryConnectPUT = function(connectionString) {
+exports.registry_Connect = function(connectionString) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -31,7 +30,7 @@ exports.registryConnectPUT = function(connectionString) {
  * connectionId String Id for the connection
  * no response value expected for this operation
  **/
-exports.registryConnectionIdDisconnectPUT = function(connectionId) {
+exports.registry_Disconnect = function(connectionId) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -42,11 +41,11 @@ exports.registryConnectionIdDisconnectPUT = function(connectionId) {
  * gets the module twin for the given deviceid and moduleid
  *
  * connectionId String Id for the connection
- * deviceId String
- * moduleId String
+ * deviceId String 
+ * moduleId String 
  * returns Object
  **/
-exports.registryConnectionIdModuleTwinDeviceIdModuleIdGET = function(connectionId,deviceId,moduleId) {
+exports.registry_GetModuleTwin = function(connectionId,deviceId,moduleId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = "{}";
@@ -63,23 +62,14 @@ exports.registryConnectionIdModuleTwinDeviceIdModuleIdGET = function(connectionI
  * update the module twin for the given deviceId and moduleId
  *
  * connectionId String Id for the connection
- * deviceId String
- * moduleId String
- * props Object
+ * deviceId String 
+ * moduleId String 
+ * props Object 
  * no response value expected for this operation
  **/
-exports.registryConnectionIdModuleTwinDeviceIdModuleIdPATCH = function(connectionId,deviceId,moduleId,props) {
+exports.registry_PatchModuleTwin = function(connectionId,deviceId,moduleId,props) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
 }
 
-// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-//
-// When updating this file, make sure the code below ends up in the new file.  This is how we
-// avoid changing the codegen code.  The real implementations are in the *Glue.js files, and we leave the
-// codegen stubs in here.  We replace all the codegen implementations with our new implementations
-// and then make sure we've replaced them all before exporting.
-//
-// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-module.exports = require('../glue/glueUtils').replaceExports(module.exports, '../glue/registryGlue.js')

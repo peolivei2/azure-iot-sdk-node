@@ -1,5 +1,4 @@
 'use strict';
-/*jshint esversion: 6 */
 
 
 /**
@@ -10,7 +9,7 @@
  * caCertificate Certificate  (optional)
  * returns connectResponse
  **/
-exports.deviceConnectTransportTypePUT = function(transportType,connectionString,caCertificate) {
+exports.device_Connect = function(transportType,connectionString,caCertificate) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -32,7 +31,20 @@ exports.deviceConnectTransportTypePUT = function(transportType,connectionString,
  * connectionId String Id for the connection
  * no response value expected for this operation
  **/
-exports.deviceConnectionIdDisconnectPUT = function(connectionId) {
+exports.device_Disconnect = function(connectionId) {
+  return new Promise(function(resolve, reject) {
+    resolve();
+  });
+}
+
+
+/**
+ * Enable c2d messages
+ *
+ * connectionId String Id for the connection
+ * no response value expected for this operation
+ **/
+exports.device_EnableC2dMessages = function(connectionId) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -45,7 +57,7 @@ exports.deviceConnectionIdDisconnectPUT = function(connectionId) {
  * connectionId String Id for the connection
  * no response value expected for this operation
  **/
-exports.deviceConnectionIdEnableMethodsPUT = function(connectionId) {
+exports.device_EnableMethods = function(connectionId) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -58,22 +70,44 @@ exports.deviceConnectionIdEnableMethodsPUT = function(connectionId) {
  *
  * connectionId String Id for the connection
  * methodName String name of the method to handle
- * requestAndResponse RoundtripMethodCallBody
+ * requestAndResponse RoundtripMethodCallBody 
  * no response value expected for this operation
  **/
-exports.deviceConnectionIdRoundtripMethodCallMethodNamePUT = function(connectionId,methodName,requestAndResponse) {
+exports.device_RoundtripMethodCall = function(connectionId,methodName,requestAndResponse) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
 }
 
-// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-//
-// When updating this file, make sure the code below ends up in the new file.  This is how we
-// avoid changing the codegen code.  The real implementations are in the *Glue.js files, and we leave the
-// codegen stubs in here.  We replace all the codegen implementations with our new implementations
-// and then make sure we've replaced them all before exporting.
-//
-// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-module.exports = require('../glue/glueUtils').replaceExports(module.exports, '../glue/deviceGlue.js')
+
+/**
+ * Send an event
+ *
+ * connectionId String Id for the connection
+ * eventBody String 
+ * no response value expected for this operation
+ **/
+exports.device_SendEvent = function(connectionId,eventBody) {
+  return new Promise(function(resolve, reject) {
+    resolve();
+  });
+}
+
+
+/**
+ * Wait for a c2d message
+ *
+ * connectionId String Id for the connection
+ * returns String
+ **/
+exports.device_WaitForC2dMessage = function(connectionId) {
+  return new Promise(function(resolve, reject) {
+    var examples = {};
+    if (Object.keys(examples).length > 0) {
+      resolve(examples[Object.keys(examples)[0]]);
+    } else {
+      resolve();
+    }
+  });
+}
 

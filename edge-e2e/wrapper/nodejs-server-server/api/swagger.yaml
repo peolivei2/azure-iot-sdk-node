@@ -6,7 +6,7 @@ info:
     \  This file takes some liberties with the API definitions.  In particular, response\
     \ schemas are undefined, and error responses are also undefined."
   version: "1.0.0"
-  title: "IoT SDK Device & Client REST API"
+  title: "Azure IOT End-to-End Test Wrapper Rest Api"
 tags:
 - name: "wrapper"
   description: "APIs that transcend the individual SDKs"
@@ -16,8 +16,6 @@ tags:
   description: "DeviceClient APIs"
 - name: "service"
   description: "ServiceClient APIs"
-- name: "eventhub"
-  description: "EventHub APIs"
 - name: "registry"
   description: "registry APIs"
 schemes:
@@ -25,35 +23,27 @@ schemes:
 produces:
 - "application/json"
 paths:
-  /wrapper/cleanup:
-    put:
-      tags:
-      - "wrapper"
-      summary: "verify that the clients have cleaned themselves up completely"
-      operationId: "wrapperCleanupPUT"
-      parameters: []
-      responses:
-        200:
-          description: "OK"
-      x-swagger-router-controller: "Wrapper"
-  /wrapper/session:
+  /wrapper/capabilities:
     get:
       tags:
       - "wrapper"
-      summary: "Terminate a wrapper, optionally returning the log"
-      operationId: "wrapperSessionGET"
+      summary: "Get capabilities for this test wrapper"
+      operationId: "Wrapper_GetCapabilities"
       produces:
       - "application/json"
       parameters: []
       responses:
         200:
           description: "OK"
+          schema:
+            type: "object"
       x-swagger-router-controller: "Wrapper"
+  /wrapper/cleanup:
     put:
       tags:
       - "wrapper"
-      summary: "Launch a wrapper, getting ready to test"
-      operationId: "wrapperSessionPUT"
+      summary: "verify that the clients have cleaned themselves up completely"
+      operationId: "Wrapper_Cleanup"
       parameters: []
       responses:
         200:
@@ -64,7 +54,7 @@ paths:
       tags:
       - "wrapper"
       summary: "log a message to output"
-      operationId: "wrapperMessagePUT"
+      operationId: "Wrapper_LogMessage"
       consumes:
       - "application/json"
       parameters:
@@ -84,11 +74,11 @@ paths:
       summary: "Connect to registry"
       description: "Connect to the Azure IoTHub registry.  More specifically, the\
         \ SDK saves the connection string that is passed in for future use."
-      operationId: "registryConnectPUT"
+      operationId: "Registry_Connect"
       parameters:
       - name: "connectionString"
         in: "query"
-        description: "Service connection string"
+        description: "connection string"
         required: true
         type: "string"
       responses:
@@ -104,7 +94,7 @@ paths:
       summary: "Disconnect from the registry"
       description: "Disconnects from the Azure IoTHub registry.  More specifically,\
         \ closes all connections and cleans up all resources for the active connection"
-      operationId: "registryConnectionIdDisconnectPUT"
+      operationId: "Registry_Disconnect"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -120,7 +110,7 @@ paths:
       tags:
       - "registry"
       summary: "gets the module twin for the given deviceid and moduleid"
-      operationId: "registryConnectionIdModuleTwinDeviceIdModuleIdGET"
+      operationId: "Registry_GetModuleTwin"
       produces:
       - "application/json"
       parameters:
@@ -142,13 +132,12 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Registry"
     patch:
       tags:
       - "registry"
       summary: "update the module twin for the given deviceId and moduleId"
-      operationId: "registryConnectionIdModuleTwinDeviceIdModuleIdPATCH"
+      operationId: "Registry_PatchModuleTwin"
       consumes:
       - "application/json"
       parameters:
@@ -179,7 +168,7 @@ paths:
       tags:
       - "module"
       summary: "Connect to the azure IoT Hub as a module"
-      operationId: "moduleConnectTransportTypePUT"
+      operationId: "Module_Connect"
       consumes:
       - "application/json"
       parameters:
@@ -215,7 +204,7 @@ paths:
       tags:
       - "module"
       summary: "Connect to the azure IoT Hub as a module using the environment variables"
-      operationId: "moduleConnectFromEnvironmentTransportTypePUT"
+      operationId: "Module_ConnectFromEnvironment"
       parameters:
       - name: "transportType"
         in: "path"
@@ -241,7 +230,7 @@ paths:
       summary: "Disconnect the module"
       description: "Disconnects from Azure IoTHub service.  More specifically, closes\
         \ all connections and cleans up all resources for the active connection"
-      operationId: "moduleConnectionIdDisconnectPUT"
+      operationId: "Module_Disconnect"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -257,7 +246,7 @@ paths:
       tags:
       - "module"
       summary: "Enable module twins"
-      operationId: "moduleConnectionIdEnableTwinPUT"
+      operationId: "Module_EnableTwin"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -273,7 +262,7 @@ paths:
       tags:
       - "module"
       summary: "Enable methods"
-      operationId: "moduleConnectionIdEnableMethodsPUT"
+      operationId: "Module_EnableMethods"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -289,7 +278,7 @@ paths:
       tags:
       - "module"
       summary: "Enable input messages"
-      operationId: "moduleConnectionIdEnableInputMessagesPUT"
+      operationId: "Module_EnableInputMessages"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -305,7 +294,7 @@ paths:
       tags:
       - "module"
       summary: "Get the device twin"
-      operationId: "moduleConnectionIdTwinGET"
+      operationId: "Module_GetTwin"
       produces:
       - "application/json"
       parameters:
@@ -319,13 +308,12 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Module"
     patch:
       tags:
       - "module"
       summary: "Updates the device twin"
-      operationId: "moduleConnectionIdTwinPATCH"
+      operationId: "Module_PatchTwin"
       consumes:
       - "application/json"
       parameters:
@@ -348,7 +336,7 @@ paths:
       tags:
       - "module"
       summary: "Wait for the next desired property patch"
-      operationId: "moduleConnectionIdTwinDesiredPropPatchGET"
+      operationId: "Module_WaitForDesiredPropertiesPatch"
       produces:
       - "application/json"
       parameters:
@@ -362,14 +350,13 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Module"
   /module/{connectionId}/event:
     put:
       tags:
       - "module"
       summary: "Send an event"
-      operationId: "moduleConnectionIdEventPUT"
+      operationId: "Module_SendEvent"
       consumes:
       - "text/json"
       parameters:
@@ -392,7 +379,7 @@ paths:
       tags:
       - "module"
       summary: "Send an event to a module output"
-      operationId: "moduleConnectionIdOutputEventOutputNamePUT"
+      operationId: "Module_SendOutputEvent"
       consumes:
       - "text/json"
       parameters:
@@ -419,7 +406,7 @@ paths:
       tags:
       - "module"
       summary: "Wait for a message on a module input"
-      operationId: "moduleConnectionIdInputMessageInputNameGET"
+      operationId: "Module_WaitForInputMessage"
       produces:
       - "text/json"
       parameters:
@@ -450,7 +437,7 @@ paths:
         \ our test code right now (because the method handlers for C, Java, and probably\
         \ Python all return the method response instead of supporting an async method\
         \ call)"
-      operationId: "moduleConnectionIdRoundtripMethodCallMethodNamePUT"
+      operationId: "Module_RoundtripMethodCall"
       consumes:
       - "application/json"
       produces:
@@ -480,7 +467,7 @@ paths:
       tags:
       - "module"
       summary: "call the given method on the given module"
-      operationId: "moduleConnectionIdModuleMethodDeviceIdModuleIdPUT"
+      operationId: "Module_InvokeModuleMethod"
       consumes:
       - "application/json"
       produces:
@@ -509,14 +496,13 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Module"
   /module/{connectionId}/deviceMethod/{deviceId}:
     put:
       tags:
       - "module"
       summary: "call the given method on the given device"
-      operationId: "moduleConnectionIdDeviceMethodDeviceIdPUT"
+      operationId: "Module_InvokeDeviceMethod"
       consumes:
       - "application/json"
       produces:
@@ -541,7 +527,6 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Module"
   /service/connect:
     put:
@@ -550,11 +535,11 @@ paths:
       summary: "Connect to service"
       description: "Connect to the Azure IoTHub service.  More specifically, the SDK\
         \ saves the connection string that is passed in for future use."
-      operationId: "serviceConnectPUT"
+      operationId: "Service_Connect"
       parameters:
       - name: "connectionString"
         in: "query"
-        description: "Service connection string"
+        description: "connection string"
         required: true
         type: "string"
       responses:
@@ -570,7 +555,7 @@ paths:
       summary: "Disconnect from the service"
       description: "Disconnects from the Azure IoTHub service.  More specifically,\
         \ closes all connections and cleans up all resources for the active connection"
-      operationId: "serviceConnectionIdDisconnectPUT"
+      operationId: "Service_Disconnect"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -586,7 +571,7 @@ paths:
       tags:
       - "service"
       summary: "call the given method on the given module"
-      operationId: "serviceConnectionIdModuleMethodDeviceIdModuleIdPUT"
+      operationId: "Service_InvokeModuleMethod"
       consumes:
       - "application/json"
       produces:
@@ -615,14 +600,13 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Service"
   /service/{connectionId}/deviceMethod/{deviceId}:
     put:
       tags:
       - "service"
       summary: "call the given method on the given device"
-      operationId: "serviceConnectionIdDeviceMethodDeviceIdPUT"
+      operationId: "Service_InvokeDeviceMethod"
       consumes:
       - "application/json"
       produces:
@@ -647,67 +631,14 @@ paths:
           description: "OK"
           schema:
             type: "object"
-            properties: {}
       x-swagger-router-controller: "Service"
-  /eventhub/connect:
+  /service/{connectionId}/sendC2d:
     put:
       tags:
-      - "eventhub"
-      summary: "Connect to eventhub"
-      description: "Connect to the Azure eventhub service."
-      operationId: "eventhubConnectPUT"
-      parameters:
-      - name: "connectionString"
-        in: "query"
-        description: "Service connection string"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "OK"
-          schema:
-            $ref: "#/definitions/connectResponse"
-      x-swagger-router-controller: "Eventhub"
-  /eventhub/{connectionId}/disconnect/:
-    put:
-      tags:
-      - "eventhub"
-      summary: "Disconnect from the eventhub"
-      description: "Disconnects from the Azure eventhub service"
-      operationId: "eventhubConnectionIdDisconnectPUT"
-      parameters:
-      - name: "connectionId"
-        in: "path"
-        description: "Id for the connection"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "OK"
-      x-swagger-router-controller: "Eventhub"
-  /eventhub/{connectionId}/enableTelemetry:
-    put:
-      tags:
-      - "eventhub"
-      summary: "Enable telemetry"
-      operationId: "eventhubConnectionIdEnableTelemetryPUT"
-      parameters:
-      - name: "connectionId"
-        in: "path"
-        description: "Id for the connection"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "OK"
-      x-swagger-router-controller: "Eventhub"
-  /eventhub/{connectionId}/deviceTelemetry/{deviceId}:
-    get:
-      tags:
-      - "eventhub"
-      summary: "wait for telemetry sent from a specific device"
-      operationId: "eventhubConnectionIdDeviceTelemetryDeviceIdGET"
-      produces:
+      - "service"
+      summary: "Send a c2d message"
+      operationId: "Service_SendC2d"
+      consumes:
       - "text/json"
       parameters:
       - name: "connectionId"
@@ -715,22 +646,21 @@ paths:
         description: "Id for the connection"
         required: true
         type: "string"
-      - name: "deviceId"
-        in: "path"
+      - in: "body"
+        name: "eventBody"
         required: true
-        type: "string"
+        schema:
+          type: "string"
       responses:
         200:
           description: "OK"
-          schema:
-            type: "string"
-      x-swagger-router-controller: "Eventhub"
+      x-swagger-router-controller: "Service"
   /device/connect/{transportType}:
     put:
       tags:
       - "device"
       summary: "Connect to the azure IoT Hub as a device"
-      operationId: "deviceConnectTransportTypePUT"
+      operationId: "Device_Connect"
       consumes:
       - "application/json"
       parameters:
@@ -768,7 +698,7 @@ paths:
       summary: "Disconnect the device"
       description: "Disconnects from Azure IoTHub service.  More specifically, closes\
         \ all connections and cleans up all resources for the active connection"
-      operationId: "deviceConnectionIdDisconnectPUT"
+      operationId: "Device_Disconnect"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -784,7 +714,7 @@ paths:
       tags:
       - "device"
       summary: "Enable methods"
-      operationId: "deviceConnectionIdEnableMethodsPUT"
+      operationId: "Device_EnableMethods"
       parameters:
       - name: "connectionId"
         in: "path"
@@ -807,7 +737,7 @@ paths:
         \ our test code right now (because the method handlers for C, Java, and probably\
         \ Python all return the method response instead of supporting an async method\
         \ call)"
-      operationId: "deviceConnectionIdRoundtripMethodCallMethodNamePUT"
+      operationId: "Device_RoundtripMethodCall"
       consumes:
       - "application/json"
       produces:
@@ -832,6 +762,65 @@ paths:
         200:
           description: "OK"
       x-swagger-router-controller: "Device"
+  /device/{connectionId}/enableC2dMessages:
+    put:
+      tags:
+      - "device"
+      summary: "Enable c2d messages"
+      operationId: "Device_EnableC2dMessages"
+      parameters:
+      - name: "connectionId"
+        in: "path"
+        description: "Id for the connection"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+      x-swagger-router-controller: "Device"
+  /device/{connectionId}/event:
+    put:
+      tags:
+      - "device"
+      summary: "Send an event"
+      operationId: "Device_SendEvent"
+      consumes:
+      - "text/json"
+      parameters:
+      - name: "connectionId"
+        in: "path"
+        description: "Id for the connection"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "eventBody"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+      x-swagger-router-controller: "Device"
+  /device/{connectionId}/c2dMessage:
+    get:
+      tags:
+      - "device"
+      summary: "Wait for a c2d message"
+      operationId: "Device_WaitForC2dMessage"
+      produces:
+      - "text/json"
+      parameters:
+      - name: "connectionId"
+        in: "path"
+        description: "Id for the connection"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+      x-swagger-router-controller: "Device"
 definitions:
   connectResponse:
     type: "object"
@@ -842,6 +831,13 @@ definitions:
     description: "result of a connection to a service, device, or module client"
     example:
       connectionId: "connectionId"
+  certificate:
+    type: "object"
+    properties:
+      cert:
+        type: "string"
+        description: "unique identifier for this connection"
+    description: "certificate in the body of a message"
   roundtripMethodCallBody:
     type: "object"
     properties:
@@ -859,10 +855,3 @@ definitions:
         type: "integer"
         description: "status code to return to the service"
     description: "parameters and response for a sync method call"
-  certificate:
-    type: "object"
-    properties:
-      cert:
-        type: "string"
-        description: "unique identifier for this connection"
-    description: "certificate in the body of a message"

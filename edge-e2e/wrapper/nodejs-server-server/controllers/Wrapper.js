@@ -3,8 +3,8 @@
 var utils = require('../utils/writer.js');
 var Wrapper = require('../service/WrapperService');
 
-module.exports.wrapperCleanupPUT = function wrapperCleanupPUT (req, res, next) {
-  Wrapper.wrapperCleanupPUT()
+module.exports.wrapper_Cleanup = function wrapper_Cleanup (req, res, next) {
+  Wrapper.wrapper_Cleanup()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -13,29 +13,19 @@ module.exports.wrapperCleanupPUT = function wrapperCleanupPUT (req, res, next) {
     });
 };
 
-module.exports.wrapperMessagePUT = function wrapperMessagePUT (req, res, next) {
+module.exports.wrapper_GetCapabilities = function wrapper_GetCapabilities (req, res, next) {
+  Wrapper.wrapper_GetCapabilities()
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response);
+    });
+};
+
+module.exports.wrapper_LogMessage = function wrapper_LogMessage (req, res, next) {
   var msg = req.swagger.params['msg'].value;
-  Wrapper.wrapperMessagePUT(msg)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
-
-module.exports.wrapperSessionGET = function wrapperSessionGET (req, res, next) {
-  Wrapper.wrapperSessionGET()
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
-
-module.exports.wrapperSessionPUT = function wrapperSessionPUT (req, res, next) {
-  Wrapper.wrapperSessionPUT()
+  Wrapper.wrapper_LogMessage(msg)
     .then(function (response) {
       utils.writeJson(res, response);
     })
