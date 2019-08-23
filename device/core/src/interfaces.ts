@@ -141,9 +141,9 @@ export interface DeviceClientOptions extends X509 {
 
 /**
  * Structure to mimic the BlobUploadCommonResponse from Azure Storage v10 and v12.
- * This is used in {@link Client.uploadToBlobV2NotifyBlobUploadComplete} as a property named `uploadResponse` to define input parameters for the API.
+ * This is used in {@link Client.fileUploadNotifyBlobUploadComplete} as a property named `uploadResponse` to define input parameters for the API.
  *
- * @see {Client.uploadToBlobV2NotifyBlobUploadComplete}
+ * @see {Client.fileUploadNotifyBlobUploadComplete}
  */
 export interface BlobUploadCommonResponseStub {
   errorCode?: undefined | string;
