@@ -6,10 +6,10 @@
 // single API call, this API removes the Azure Storage Blob package from within the Node.js Client Library
 // and instead exposes two new APIs: 
 //
-// fileUploadGetStorageBlobSAS 
+// blobGetSharedAccessSignatureFromIotHub 
 // > Using a HTTP POST, retrieve a SAS Token for the Storage Account linked to your IoT Hub.
 //
-// fileUploadNotifyBlobUploadComplete
+// blobNotifyIotHubUploadComplete
 // > Using HTTP POST, notify IoT Hub of the status of a finished file upload (success/failure).
 // 
 // More information on Uploading Files with IoT Hub can be found here:
@@ -53,7 +53,7 @@ function getFileStats(localFilePath) {
 
 async function uploadToBlob(localFilePath, client) {
   // OUR CODE
-  let blobInfo = await client.fileUploadGetStorageBlobSAS(blobName);
+  let blobInfo = await client.blobGetSharedAccessSignatureFromIotHub(blobName);
   if (!blobInfo) {
     throw new errors.ArgumentError('Invalid upload parameters');
   }
@@ -95,7 +95,7 @@ async function uploadToBlob(localFilePath, client) {
     // END STORAGE CODE
 
     // notify IoT Hub of upload to blob status (success/faillure)
-    await client.fileUploadNotifyBlobUploadComplete(uploadStatus);
+    await client.blobNotifyIotHubUploadComplete(uploadStatus);
     return 0;
 }
 
