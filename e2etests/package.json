@@ -63,6 +63,9 @@
     "phase2_slow": "npm-run-all -p -l file_upload device_method twin_e2e_tests sas_token_tests device_service empty_messages c2d_disconnect method_disconnect twin_disconnect",
     "alltest": "npm run  phase0_modules && npm run phase1_fast && npm run phase2_slow",
     "e2e": "npm -s run lint && npm -s run alltest",
+    "hub1": "npm-run-all -p -l registry empty_messages device_service device_acknowledge_tests device_method sas_token_tests service twin_e2e_tests",
+    "hubonly": "npm run phase0_modules && npm run hub1",
+    "hub": "npm -s run hubonly",
     "test": "npm -s run lint && npm -s run alltest"
   },
   "engines": {

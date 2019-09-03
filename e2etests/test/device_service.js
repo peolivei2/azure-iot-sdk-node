@@ -40,12 +40,12 @@ var maximumMessageSize = ((256*1024)-512);
   });
 });
 
-[
-  deviceAmqp.Amqp,
-  deviceMqtt.Mqtt
-].forEach(function (deviceTransport) {
-  device_service_tests(deviceTransport, DeviceIdentityHelper.createDeviceWithX509CASignedCert);
-});
+// [
+//   deviceAmqp.Amqp,
+//   deviceMqtt.Mqtt
+// ].forEach(function (deviceTransport) {
+//   device_service_tests(deviceTransport, DeviceIdentityHelper.createDeviceWithX509CASignedCert);
+// });
 
 function device_service_tests(deviceTransport, createDeviceMethod) {
   describe('Over ' + deviceTransport.name + ' using device/service clients c2d with ' + createDeviceMethod.name + ' authentication', function () {
