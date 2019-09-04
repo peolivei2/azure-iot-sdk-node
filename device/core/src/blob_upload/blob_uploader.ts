@@ -50,11 +50,9 @@ export interface Aborter {
  * @private
  */
 export interface StorageApi {
-    createBlobServiceWithSas(hostName: string, sasToken: string): BlobService;
     BlockBlobURL: any;
     Aborter: Aborter;
     StorageURL: any;
-    ServiceURL: any;
     AnonymousCredential: any;
     uploadStreamToBlockBlob: any;
 }
@@ -98,18 +96,17 @@ export class BlobUploader implements BlobUploaderInterface {
         this.storageApi = require('@azure/storage-blob');
       }
 
-      const pipeline = this.storageApi.StorageURL.newPipeline(new this.storageApi.AnonymousCredential(), { 
+      const pipeline = this.storageApi.StorageURL.newPipeline(new this.storageApi.AnonymousCredential(), {
         // httpClient: myHTTPClient,
         // logger: MyLogger
         retryOptions: { maxTries: 4 },
-        telemetry: { value: "HighLevelSample V1.0.0" },
+        telemetry: { value: 'HighLevelSample V1.0.0' },
         keepAliveOptions: {
           enable: false
         }
       });
-      const sasURL = new this.storageApi.ServiceURL( `https://${blobInfo.hostName}/${blobInfo.containerName}/${blobInfo.blobName}${blobInfo.sasToken}`, pipeline);
-      const blockBlobURL = new this.storageApi.BlockBlobURL(sasURL, pipeline);
-      const uploadPromise = this.storageApi.uploadStreamToBlockBlob(this.storageApi.Aborter.timeout(30*60*1000), stream, blockBlobURL, streamLength, 20, { progress: ev => console.log(ev) });
+      const blockBlobURL = new this.storageApi.BlockBlobURL(`https://${blobInfo.hostName}/${blobInfo.containerName}/${blobInfo.blobName}${blobInfo.sasToken}`, pipeline);
+      const uploadPromise = this.storageApi.uploadStreamToBlockBlob(this.storageApi.Aborter.timeout(30 * 60 * 1000), stream, blockBlobURL, streamLength, 20, { progress: ev => console.log(ev) });
       uploadPromise
       .then((uploadBlobResponse: any) => {
         /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_16_005: [`uploadToBlob` shall call the `_callback` calback with the result of the storage api call.]*/

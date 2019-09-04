@@ -55,9 +55,9 @@ export class BlobUploadResult {
     if (!err && (!uploadResponse)) throw new ReferenceError('if err is null, response must be supplied');
     // from new storage API
     if (err) {
-      const statusCode = err.statusCode;
-      const statusDescription = err.response;
-      uploadResult = new BlobUploadResult(false, statusCode, statusDescription) 
+      const statusCode = err.hasOwnProperty('statusCode') ? err.statusCode : -1;
+      const statusDescription = err.hasOwnProperty('response') ? err.response : err.message;
+      uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
     }
     if (uploadResponse.errorCode) {
       const statusCode = uploadResponse._response ? uploadResponse._response.status : -1;
