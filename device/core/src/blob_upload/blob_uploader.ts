@@ -42,11 +42,21 @@ export interface BlobService {
     createBlockBlobFromStream(containerName: string, blobName: string, stream: Stream, streamLength: number, done: (err: Error, body?: any, result?: BlobResponse) => void): void;
 }
 
+export interface Aborter {
+  timeout(time: number): any;
+}
+
 /**
  * @private
  */
 export interface StorageApi {
     createBlobServiceWithSas(hostName: string, sasToken: string): BlobService;
+    BlockBlobURL: any;
+    Aborter: Aborter;
+    StorageURL: any;
+    ServiceURL: any;
+    AnonymousCredential: any;
+    uploadStreamToBlockBlob: any;
 }
 
 /**
@@ -82,12 +92,32 @@ export class BlobUploader implements BlobUploaderInterface {
       }
 
       if (!this.storageApi) {
+        // PIERRE QUESTION: WHY DO WE EVEN GIVE THE OPTION TO ADD YOUR OWN STORAGE API??? WILL I BE BREAKING PEOPLE
+        // BY CHANGING THIS CODE?
         /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_06_002: [`BlobUploader` should delay load azure-storage into the storageAPI property if `storageApi` is falsy]*/
-        this.storageApi = require('azure-storage');
+        this.storageApi = require('@azure/storage-blob');
       }
-      const blobService = this.storageApi.createBlobServiceWithSas(blobInfo.hostName, blobInfo.sasToken);
-      /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_16_005: [`uploadToBlob` shall call the `_callback` calback with the result of the storage api call.]*/
-      blobService.createBlockBlobFromStream(blobInfo.containerName, blobInfo.blobName, stream, streamLength, _callback);
+
+      const pipeline = this.storageApi.StorageURL.newPipeline(new this.storageApi.AnonymousCredential(), { 
+        // httpClient: myHTTPClient,
+        // logger: MyLogger
+        retryOptions: { maxTries: 4 },
+        telemetry: { value: "HighLevelSample V1.0.0" },
+        keepAliveOptions: {
+          enable: false
+        }
+      });
+      const sasURL = new this.storageApi.ServiceURL( `https://${blobInfo.hostName}/${blobInfo.containerName}/${blobInfo.blobName}${blobInfo.sasToken}`, pipeline);
+      const blockBlobURL = new this.storageApi.BlockBlobURL(sasURL, pipeline);
+      const uploadPromise = this.storageApi.uploadStreamToBlockBlob(this.storageApi.Aborter.timeout(30*60*1000), stream, blockBlobURL, streamLength, 20, { progress: ev => console.log(ev) });
+      uploadPromise
+      .then((uploadBlobResponse: any) => {
+        /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_16_005: [`uploadToBlob` shall call the `_callback` calback with the result of the storage api call.]*/
+        _callback(null, uploadBlobResponse);
+      })
+      .catch((err: Error) => {
+        _callback(err, null);
+      });
     }, ((body, result) => { return { body: body, result: result }; }), done);
   }
 }

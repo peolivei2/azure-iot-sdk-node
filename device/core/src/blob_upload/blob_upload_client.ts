@@ -4,10 +4,10 @@
 'use strict';
 
 import { Stream } from 'stream';
-import { AuthenticationProvider, errorCallbackToPromise, ErrorCallback, TripleValueCallback } from 'azure-iot-common';
+import { AuthenticationProvider, errorCallbackToPromise, ErrorCallback } from 'azure-iot-common';
 
 import { BlobUploadResult } from './blob_upload_result';
-import { BlobUploader as DefaultBlobUploader, BlobResponse } from './blob_uploader';
+import { BlobUploader as DefaultBlobUploader, BlobUploaderInterface as BlobUploader } from './blob_uploader';
 import { FileUploadApi as DefaultFileUploadApi, FileUploadInterface } from './file_upload_api';
 
 import * as errors from './blob_upload_errors';
@@ -25,13 +25,6 @@ export interface UploadParams {
 
 
 
-/**
- * @private
- */
-export interface BlobUploader {
-  uploadToBlob(uploadParams: UploadParams, stream: Stream, streamLength: number, done: TripleValueCallback<any, BlobResponse>): void;
-  uploadToBlob(uploadParams: UploadParams, stream: Stream, streamLength: number): Promise<any>;
-}
 
 /**
  * @private
@@ -82,8 +75,8 @@ export class BlobUploadClient implements BlobUpload {
           _callback(error);
         } else {
           /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_CLIENT_16_006: [`uploadToBlob` shall upload the stream to the specified blob using its BlobUploader instance.]*/
-          this._blobUploader.uploadToBlob(uploadParams, stream, streamLength, (err, body, result) => {
-            const uploadResult = BlobUploadResult.fromAzureStorageCallbackArgs(err, body, result);
+          this._blobUploader.uploadToBlob(uploadParams, stream, streamLength, (err, response) => {
+            const uploadResult = BlobUploadResult.fromAzureStorageCallbackArgs(err, response);
             /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_CLIENT_41_001: [`uploadToBlob` shall notify the result of a blob upload to the IoT Hub service using the file upload API endpoint.]*/
             this._fileUploadApi.notifyUploadComplete(uploadParams.correlationId, uploadResult, (err) => {
               if (err) {

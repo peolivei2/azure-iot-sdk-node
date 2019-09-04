@@ -141,14 +141,22 @@ export interface DeviceClientOptions extends X509 {
 
 /**
  * Structure to mimic the BlobUploadCommonResponse from Azure Storage v10 and v12.
- * This is used in {@link Client.blobNotifyIotHubUploadComplete} as a property named `uploadResponse` to define input parameters for the API.
+ * This is used in {@link Client.notifyBlobUploadStatus} as a property named `uploadResponse` to define input parameters for the API.
  *
- * @see {Client.blobNotifyIotHubUploadComplete}
+ * @see {Client.notifyBlobUploadStatus}
  */
 export interface BlobUploadCommonResponseStub {
-  errorCode?: undefined | string;
+  errorCode?: string;
   _response?: {
     status?: number;
     bodyAsText?: string;
   };
+}
+
+export interface RestErrorStub {
+  code?: string;
+  statusCode?: number;
+  request?: any; // WebResource
+  response?: any; // HttpOperationResponse
+  body?: any;
 }

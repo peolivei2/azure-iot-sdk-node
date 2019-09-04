@@ -183,7 +183,7 @@ export class Client extends InternalClient {
   }
 
   /**
-   * @description      The `blobGetSharedAccessSignatureFromIotHub` gets the linked storage account SAS Token from IoT Hub
+   * @description      The `getBlobSharedAccessSignature` gets the linked storage account SAS Token from IoT Hub
    *
    * @param {String}    blobName                The name to use for the blob that will be created with the content of the stream.
    * @param {Callback}  [callback]              Optional callback to call when the upload is complete.
@@ -191,21 +191,21 @@ export class Client extends InternalClient {
    *
    * @throws {ReferenceException} If blobName is falsy.
    */
-  blobGetSharedAccessSignatureFromIotHub(blobName: string, callback: Callback<UploadParams>): void;
-  blobGetSharedAccessSignatureFromIotHub(blobName: string): Promise<UploadParams>;
-  blobGetSharedAccessSignatureFromIotHub(blobName: string, callback?: Callback<UploadParams>): Promise<UploadParams> | void {
+  getBlobSharedAccessSignature(blobName: string, callback: Callback<UploadParams>): void;
+  getBlobSharedAccessSignature(blobName: string): Promise<UploadParams>;
+  getBlobSharedAccessSignature(blobName: string, callback?: Callback<UploadParams>): Promise<UploadParams> | void {
     return callbackToPromise((_callback) => {
-      /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobGetSharedAccessSignatureFromIotHub` method shall throw a `ReferenceError` if `blobName` is falsy.]*/
+      /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `getBlobSharedAccessSignature` method shall throw a `ReferenceError` if `blobName` is falsy.]*/
       if (!blobName) throw new ReferenceError('blobName cannot be \'' + blobName + '\'');
       const retryOp = new RetryOperation(this._retryPolicy, this._maxOperationTimeout);
       retryOp.retry((opCallback) => {
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobGetSharedAccessSignatureFromIotHub` method shall call the `getBlobSharedAccessSignature` method in the instantiated `_fileUploadApi` class and pass in `blobName` as a parameter.]*/
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `getBlobSharedAccessSignature` method shall call the `getBlobSharedAccessSignature` method in the instantiated `_fileUploadApi` class and pass in `blobName` as a parameter.]*/
         this._fileUploadApi.getBlobSharedAccessSignature(blobName, opCallback);
       }, (err, result) => {
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobGetSharedAccessSignatureFromIotHub` method shall call the `_callback` callback with `err` and `result` from the call to `getBlobSharedAccessSignature`.]*/
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `getBlobSharedAccessSignature` method shall call the `_callback` callback with `err` and `result` from the call to `getBlobSharedAccessSignature`.]*/
         if (!err) {
           debug('got blob storage shared access signature.');
-          /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobGetSharedAccessSignatureFromIotHub` method shall store the `result` value for use by the `blobNotifyIotHubUploadComplete` method.]*/
+          /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `getBlobSharedAccessSignature` method shall store the `result` value for use by the `notifyBlobUploadStatus` method.]*/
           this._blobStorageUploadParams = result;
         } else {
           debug('Could not obtain blob shared access signature.');
@@ -216,7 +216,7 @@ export class Client extends InternalClient {
   }
 
   /**
-   * @description      The `blobNotifyIotHubUploadComplete` method sends IoT Hub the result of a blob upload.
+   * @description      The `notifyBlobUploadStatus` method sends IoT Hub the result of a blob upload.
    *
    * @param {BlobUploadCommonResponseStub}   uploadResponse   The reponse received after a blob upload via the storage api is complete
    * @param {ErrorCallback}                  [callback]       Optional callback to call when the upload is complete.
@@ -224,22 +224,22 @@ export class Client extends InternalClient {
    *
    * @throws {ReferenceException} If uploadResponse is falsy.
    */
-  blobNotifyIotHubUploadComplete(uploadResponse: BlobUploadCommonResponseStub, callback: ErrorCallback): void;
-  blobNotifyIotHubUploadComplete(uploadResponse: BlobUploadCommonResponseStub): Promise<void>;
-  blobNotifyIotHubUploadComplete(uploadResponse: BlobUploadCommonResponseStub, callback?: ErrorCallback): Promise<void> | void {
+  notifyBlobUploadStatus(err: Error, uploadResponse: BlobUploadCommonResponseStub, callback: ErrorCallback): void;
+  notifyBlobUploadStatus(err: Error, uploadResponse: BlobUploadCommonResponseStub): Promise<void>;
+  notifyBlobUploadStatus(err: Error, uploadResponse: BlobUploadCommonResponseStub, callback?: ErrorCallback): Promise<void> | void {
     return callbackToPromise((_callback) => {
-      /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobNotifyIotHubUploadComplete` method shall throw a `ReferenceError` if `uploadResponse` is falsy.]*/
+      /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `notifyBlobUploadStatus` method shall throw a `ReferenceError` if `uploadResponse` is falsy.]*/
       if (!uploadResponse) throw new ReferenceError('uploadResponse cannot be \'' + uploadResponse + '\'');
-      if (!this._blobStorageUploadParams || !this._blobStorageUploadParams.correlationId) throw new ReferenceError('blobGetSharedAccessSignatureFromIotHub must be called before blobNotifyIotHubUploadComplete in order to set \'correlationId\' ');
+      if (!this._blobStorageUploadParams || !this._blobStorageUploadParams.correlationId) throw new ReferenceError('getBlobSharedAccessSignature must be called before notifyBlobUploadStatus in order to set \'correlationId\' ');
       const retryOp = new RetryOperation(this._retryPolicy, this._maxOperationTimeout);
       retryOp.retry((opCallback) => {
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobNotifyIotHubUploadComplete` method shall call the `fromAzureStorageCallbackArgs2` method of the `BlobUploadResult` class to reformat the `uploadResponse`.]*/
-        let reformattedUploadResponse = BlobUploadResult.fromAzureStorageCallbackArgs2(uploadResponse);
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobNotifyIotHubUploadComplete` method shall call the `fromAzureStorageCallbackArgs2` method of the `BlobUploadResult` class.]*/
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `notifyBlobUploadStatus` method shall call the `fromAzureStorageCallbackArgs2` method of the `BlobUploadResult` class to reformat the `uploadResponse`.]*/
+        let reformattedUploadResponse = BlobUploadResult.fromAzureStorageCallbackArgs(err, uploadResponse);
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `notifyBlobUploadStatus` method shall call the `fromAzureStorageCallbackArgs2` method of the `BlobUploadResult` class.]*/
         this._fileUploadApi.notifyUploadComplete(this._blobStorageUploadParams.correlationId, reformattedUploadResponse, opCallback);
       }, (err) => {
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobNotifyIotHubUploadComplete` method shall call the `_callback` callback with `err` if the notification fails.]*/
-        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `blobNotifyIotHubUploadComplete` method shall call the `_callback` callback with no parameters if the notification succeeds.]*/
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `notifyBlobUploadStatus` method shall call the `_callback` callback with `err` if the notification fails.]*/
+        /*Codes_SRS_NODE_DEVICE_CLIENT_41_XXX: [The `notifyBlobUploadStatus` method shall call the `_callback` callback with no parameters if the notification succeeds.]*/
         safeCallback(_callback, err);
       });
     }, callback);
