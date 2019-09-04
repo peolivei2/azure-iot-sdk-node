@@ -100,7 +100,7 @@ export class BlobUploader implements BlobUploaderInterface {
         // httpClient: myHTTPClient,
         // logger: MyLogger
         retryOptions: { maxTries: 4 },
-        telemetry: { value: 'HighLevelSample V1.0.0' },
+        telemetry: { value: 'Upload To Blob via Node.js IoT Client' },
         keepAliveOptions: {
           enable: false
         }
