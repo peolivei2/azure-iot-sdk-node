@@ -89,12 +89,12 @@ export class BlobUploader implements BlobUploaderInterface {
         throw new errors.ArgumentError('Invalid upload parameters');
       }
 
+      // this is only an option for testing purposes.
       if (!this.storageApi) {
-        // PIERRE QUESTION: WHY DO WE EVEN GIVE THE OPTION TO ADD YOUR OWN STORAGE API??? WILL I BE BREAKING PEOPLE
-        // BY CHANGING THIS CODE?
         /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_06_002: [`BlobUploader` should delay load azure-storage into the storageAPI property if `storageApi` is falsy]*/
         this.storageApi = require('@azure/storage-blob');
       }
+      if (!this.storageApi.StorageURL) throw new ReferenceError('storageApi v10 has not been properly loaded. Verify the correct version of StorageAPI is used.');
 
       const pipeline = this.storageApi.StorageURL.newPipeline(new this.storageApi.AnonymousCredential(), {
         // httpClient: myHTTPClient,

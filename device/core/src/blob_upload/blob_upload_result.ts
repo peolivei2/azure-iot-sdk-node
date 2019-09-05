@@ -52,25 +52,27 @@ export class BlobUploadResult {
   /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_RESULT_16_012: [If `err` is null and `body` and/or `response` is/are falsy, `fromAzureStorageCallbackArgs` shall throw a `ReferenceError`.]*/
   static fromAzureStorageCallbackArgs(err?: Error & RestErrorStub, uploadResponse?: any): BlobUploadResult {
     let uploadResult: BlobUploadResult;
-    if (!err && (!uploadResponse)) throw new ReferenceError('if err is null, response must be supplied');
+    if ((err && uploadResponse) || (!err && !uploadResponse)) throw new ReferenceError('either err or uploadResponse must be supplied, exclusively.');
     // from new storage API
     if (err) {
       const statusCode = err.hasOwnProperty('statusCode') ? err.statusCode : -1;
       const statusDescription = err.hasOwnProperty('response') ? err.response : err.message;
       uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
-    }
-    if (uploadResponse.errorCode) {
-      const statusCode = uploadResponse._response ? uploadResponse._response.status : -1;
-      const statusDescription = uploadResponse._response ? uploadResponse._response.bodyAsText : 'no status description';
-      uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
     } else {
-      const statusCode = uploadResponse._response.status;
-      const statusDescription = uploadResponse._response.bodyAsText;
-        if (uploadResponse._response.status >= 200 && uploadResponse._response.status < 300) {
-          uploadResult = new BlobUploadResult(true, statusCode, statusDescription);
-        } else {
-          uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
-        }
+      if (!uploadResponse._response) throw new ReferenceError('if uploadResponse is provided, _response must be a member object');
+      if (uploadResponse.errorCode) {
+        const statusCode = uploadResponse._response ? uploadResponse._response.status : -1;
+        const statusDescription = uploadResponse._response ? uploadResponse._response.bodyAsText : 'no status description';
+        uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
+      } else {
+        const statusCode = uploadResponse._response.status;
+        const statusDescription = uploadResponse._response.bodyAsText;
+          if (uploadResponse._response.status >= 200 && uploadResponse._response.status < 300) {
+            uploadResult = new BlobUploadResult(true, statusCode, statusDescription);
+          } else {
+            uploadResult = new BlobUploadResult(false, statusCode, statusDescription);
+          }
+      }
     }
     return uploadResult;
   }
