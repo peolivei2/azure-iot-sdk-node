@@ -146,7 +146,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploader.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(null, 'deviceId/' + fakeBlobName,  { statusCode: 200, body: 'Success' });
+        callback(null, { errorCode: null, _response: { status: 201, bodyAsText: ''} });
       };
 
       var client = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploader);
@@ -178,7 +178,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploader.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(null, 'deviceId/' + fakeBlobName,  { statusCode: 200, body: 'Success' });
+        callback(null, { errorCode: null, _response: { status: 201, bodyAsText: ''} });
       };
 
       var client = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploader);
@@ -213,7 +213,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploaderSuccess.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(null, 'deviceId/' + fakeBlobName,  { statusCode: 200, body: 'Success' });
+        callback(null, { errorCode: null, _response: { status: 201, bodyAsText: ''} });
       };
 
       var clientuploadsuccess = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploaderSuccess);
@@ -247,7 +247,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploaderFailure.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(BlobUploadNotificationError, 'deviceId/' + fakeBlobName,  { statusCode: 400, body: 'Random Error Code that is not 2xx' });
+        callback(BlobUploadNotificationError, null);
       };
 
       var client = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploaderFailure);
@@ -259,7 +259,7 @@ describe('BlobUploadClient', function() {
         
 
     /*Tests_SRS_NODE_DEVICE_BLOB_UPLOAD_CLIENT_41_005: [`uploadToBlob` shall call the `done` callback with a `BlobUploadNotificationError` if the data transfer fails.]*/
-    it.only('calls the done callback with a BlobUploadNotificationError if the data transfer fails but the IoT Hub notification succeeds', function(done) {
+    it('calls the done callback with a BlobUploadNotificationError if the data transfer fails but the IoT Hub notification succeeds', function(done) {
       var fakeStream = new stream.Readable();
       var fakeFileUpload = new FakeFileUploadApi();
       var fakeBlobUploader = new FakeBlobUploader();
@@ -316,7 +316,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploader.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(BlobUploadNotificationError, 'deviceId/' + fakeBlobName,  { statusCode: 400, body: 'Random Error Code that is not 2xx' });
+        callback(BlobUploadNotificationError, null);
       };
 
       var client = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploader);
@@ -350,7 +350,7 @@ describe('BlobUploadClient', function() {
       };
 
       fakeBlobUploader.uploadToBlob = function(blobInfo, stream, streamLength, callback) {
-        callback(null, 'deviceId/' + fakeBlobName,  { statusCode: 200, body: 'Success' });
+        callback(null, { errorCode: null, _response: { status: 201, bodyAsText: ''} });
       };
 
       var client = new BlobUploadClient(fakeConfig, fakeFileUpload, fakeBlobUploader);
