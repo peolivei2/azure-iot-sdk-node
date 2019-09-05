@@ -210,7 +210,7 @@ describe('Device Client', function () {
         client._blobStorageUploadParams = { correlationId: 'fakeCorrelationId' };
 
         assert.throws(function() {
-          client.notifyBlobUploadStatus(uploadResponse, function() {});
+          client.notifyBlobUploadStatus(null, uploadResponse, function() {});
         });
       });
     });
@@ -219,7 +219,7 @@ describe('Device Client', function () {
     it('throws a ReferenceError if \'correlationId\' is not set because getBlobSharedAccessSignature has not been called', function() {
       var client = new Client(new EventEmitter(), null, {}, {});
       assert.throws(function() {
-        client.notifyBlobUploadStatus(fakeUploadResponse, function() {} );
+        client.notifyBlobUploadStatus(null, fakeUploadResponse, function() {} );
       });
     });
 
@@ -234,7 +234,7 @@ describe('Device Client', function () {
 
       var client = new Client(new EventEmitter(), null, null, new FakeFileUploadApi());
       client._blobStorageUploadParams = { correlationId: 'fakeCorrelationId' };
-      client.notifyBlobUploadStatus(fakeUploadResponse, function(err) {
+      client.notifyBlobUploadStatus(null, fakeUploadResponse, function(err) {
         assert.instanceOf(err, Error);
         done();
       });
@@ -250,7 +250,7 @@ describe('Device Client', function () {
 
       var client = new Client(new EventEmitter(), null, null, new FakeFileUploadApi());
       client._blobStorageUploadParams = { correlationId: 'fakeCorrelationId' };
-      client.notifyBlobUploadStatus(fakeUploadResponse, done);
+      client.notifyBlobUploadStatus(null, fakeUploadResponse, done);
     });
   });
 

@@ -94,7 +94,6 @@ export class BlobUploader implements BlobUploaderInterface {
         /*Codes_SRS_NODE_DEVICE_BLOB_UPLOAD_06_002: [`BlobUploader` should delay load azure-storage into the storageAPI property if `storageApi` is falsy]*/
         this.storageApi = require('@azure/storage-blob');
       }
-      if (!this.storageApi.StorageURL) throw new ReferenceError('storageApi v10 has not been properly loaded. Verify the correct version of StorageAPI is used.');
 
       const pipeline = this.storageApi.StorageURL.newPipeline(new this.storageApi.AnonymousCredential(), {
         // httpClient: myHTTPClient,
