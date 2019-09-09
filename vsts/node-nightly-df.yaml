@@ -27,7 +27,7 @@ phases:
         lerna run build
     displayName: 'Bootstrap & Build'
 
-  - script: 'lerna run e2e'
+  - script: 'lerna run hub'
     displayName: 'E2E Tests'
     env:
       IOTHUB_CONNECTION_STRING: $(LINUX-IOTHUB-CONNECTION-STRING)
@@ -63,7 +63,7 @@ phases:
        call lerna run build
     displayName: 'Bootstrap & Build'
 
-  - script: 'lerna run e2e'
+  - script: 'lerna run hub'
     displayName: 'E2E Tests'
     env:
       IOTHUB_CONNECTION_STRING: $(WINDOWS-IOTHUB-CONNECTION-STRING)
